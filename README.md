@@ -48,7 +48,7 @@ docker compose up -d
 
 http://localhost:8000/docs (Teatro dos Bots Swagger)
 
-http://localhost:8000/docs (Teatro dos Bots MCP Server)
+http://localhost:8000/mcp (Teatro dos Bots MCP Server)
 
 http://localhost:5678 (n8n Web Interface)
 
