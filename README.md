@@ -2,6 +2,22 @@
 
 ## Sistema de orquestração de agentes de IA com personalidades dinâmicas, memória vetorial e comunicação via  chat e mensagens de voz utilizando Whatsapp através do `WAHA` (https://waha.devlike.pro) e `n8n` (https://n8n.io).
 
+## 🚀 Apresentando o Teatro dos Bots 🎭🤖
+
+Nos últimos meses, mergulhei fundo no universo de IA e agentes autônomos: LLMs, n8n, WAHA, protocolos como MCP, servidores MCP, integração com WhatsApp e muito mais.
+
+Como forma de juntar tudo o que venho aprendendo, criei o Teatro dos Bots: uma plataforma onde você pode criar personagens (com personalidades únicas!) e conversar com eles como se estivessem num palco interativo. 🗣️✨
+
+É um experimento — ainda longe da perfeição — mas já funcional e cheio de possibilidades para quem curte brincar com linguagem, automação e criatividade.
+
+📍 Código aberto no GitHub
+
+🛠️ Feito com FastAPI, Webhooks, n8n, agentes LLM e protocolos customizados
+
+📲 Integração com WhatsApp funcionando via webhook
+
+Se quiser contribuir, testar, ou simplesmente conversar sobre o projeto, será mais do que bem-vindo(a). Vamos construir juntos! 💬💡
+
 <img src="img/image01.png" alt="swagger" width="60%" />
 <img src="img/image08.png" alt="waha" width="60%" />
 <img src="img/image09.png" alt="n8n" width="60%" />
