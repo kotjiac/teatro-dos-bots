@@ -1,0 +1,68 @@
+services:
+  app:
+    build: .
+    container_name: teatro-dos-bots
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - pgsql
+      - qdrant
+  pgsql:
+    image: postgres:17-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: teatro_dos_bots
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d/
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  qdrant:
+    image: qdrant/qdrant:v1.14.0
+    container_name: qdrant-vector-store
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+  waha:
+    image: devlikeapro/waha:latest-2025.4.1
+    container_name: waha
+    ports:
+      - "3000:3000"
+    environment:
+      - WHATSAPP_DEFAULT_ENGINE=NOWEB
+      - WHATSAPP_HOOK_EVENTS=message
+    volumes:
+      - waha_sessions:/app/.sessions
+      - ./waha/media:/app/.media
+  n8n:
+    image: n8nio/n8n:1.90.2
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://n8n/
+      - GENERIC_TIMEZONE=America/Sao_Paulo
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_HOST=pgsql
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_PASSWORD=postgres 
+      - DB_POSTGRESDB_USER=postgres 
+      - DB_TYPE=postgresdb
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/files:/files
+
+volumes:
+  n8n_data:
+  pgdata:
+  qdrant_storage:
+  waha_sessions:

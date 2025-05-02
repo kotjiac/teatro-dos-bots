@@ -1,0 +1,588 @@
+{
+  "name": "teatro-dos-bots",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@devlikeapro/n8n-nodes-waha.wahaTrigger",
+      "typeVersion": 202502,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fe72ea00-0ebe-458c-badf-af896b2257f4",
+      "name": "WAHA Trigger",
+      "webhookId": "2a520f7e-a604-479b-819a-59ca2c7b1ebc",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('WAHA Trigger').item.json.session }}",
+        "chatId": "={{ $('WAHA Trigger').item.json.payload.from }}",
+        "messageId": "={{ $('WAHA Trigger').item.json.payload.id }}",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        700,
+        740
+      ],
+      "id": "1cee678e-5a61-40bd-baf4-117d452fdd7a",
+      "name": "WAHA3",
+      "credentials": {
+        "wahaApi": {
+          "id": "1Lxztpo5PmD4ERbR",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "492951b6-d8ca-49a2-9af4-6e3b85d87404",
+              "name": "session",
+              "value": "={{ $json.session }}",
+              "type": "string"
+            },
+            {
+              "id": "9751af31-1d14-4194-9206-3d2856874ff4",
+              "name": "from",
+              "value": "={{ $json.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "6b6ec4c4-36f3-41d0-96eb-57ef6bd6d2aa",
+              "name": "message",
+              "value": "={{ $json.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "9c0d7f68-28a0-4c07-ac32-4f7c6ca2abcb",
+              "name": "message_id",
+              "value": "={{ $json.payload.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        700,
+        120
+      ],
+      "id": "9fa3633c-c505-43a8-b696-3aab2b5f09f8",
+      "name": "TextMessage"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.payload._data.message.conversation }}",
+                    "rightValue": "=*",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "a31172fe-c308-4a8b-a2d3-4386a7c776c5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0f6fa5d-79f4-4da4-926e-dafdf6125688",
+                    "leftValue": "={{ $json.payload._data.message.extendedTextMessage }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ae778242-9521-4742-8ad8-9b535d22b878",
+                    "leftValue": "={{ $json.payload._data.message.audioMessage }}",
+                    "rightValue": "*",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        400,
+        420
+      ],
+      "id": "995a6217-cab4-4d9f-b801-1af884b308b4",
+      "name": "MessageType"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message }}",
+        "options": {
+          "systemMessage": "Você intermedia a conversa entre o usuário e os agentes. Sem falar por eles.",
+          "maxIterations": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1220,
+        120
+      ],
+      "id": "64485cf6-a412-4bd6-8e48-cf4c1f44e81b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('TextMessage').item.json.session }}",
+        "chatId": "={{ $('TextMessage').item.json.from }}",
+        "reply_to": "={{ $('TextMessage').item.json.message_id }}",
+        "text": "={{ $json.output }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1660,
+        120
+      ],
+      "id": "88180ab3-1e45-4f95-ab8c-f80133d98a6f",
+      "name": "WAHA",
+      "credentials": {
+        "wahaApi": {
+          "id": "1Lxztpo5PmD4ERbR",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('MessageType').item.json.payload.mediaUrl.replace('localhost', 'waha') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        980,
+        740
+      ],
+      "id": "39e90bfb-a02e-47ab-b3ed-57d3ded72818",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "Você é o diretor do teatro dos bots! Não faz outra coisa além de dirigir este Teatro. Ajuda os usuários a interagirem com os personagens/agentes e dá instruções aos agentes para que eles desempenhem muito bem seus papéis. Informações que estejam faltando para a execução correta das TOOLS podem ser completadas por você mesmo. Por exemplo o nome da voz e instruções de voz e dos personagens para dar mais dramaticidade e realidade. Detalhe importante: personagens femininos devem ter voz feminina e personagens masculinos voz masculina. Aprenda com os usuários e participe da fantasia. No entanto todas as falam precisam ser criadas a partir das ferramentas, você diretor não pode falar pelos agentes, apenas retransmitir seus diálogos."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1460,
+        740
+      ],
+      "id": "b2a87edf-8ad0-4000-9c96-76d2f3e3785e",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "http://teatro-dos-bots:8000/mcp",
+        "include": "selected",
+        "includeTools": [
+          "list_agents_agents_get",
+          "create_agent_create_agent_post",
+          "delete_agent_delete_agent_delete",
+          "register_agent_register_agent_post",
+          "health_health_get",
+          "rtc_text_rtc_text_post"
+        ]
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        960
+      ],
+      "id": "b923531f-090a-457d-904f-ad0d28625b66",
+      "name": "MCP Client1",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "=data",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1200,
+        740
+      ],
+      "id": "8dbb7d34-f4f5-4d07-a924-8d05df8cece5",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "pbETxSVhbSuK47JK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('MessageType').item.json.session }}",
+        "chatId": "={{ $('MessageType').item.json.payload.from }}",
+        "reply_to": "=",
+        "text": "={{ $json.output }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1860,
+        740
+      ],
+      "id": "d06e4b5f-54a3-4072-97fe-fe3431730c8a",
+      "name": "WAHA1",
+      "credentials": {
+        "wahaApi": {
+          "id": "1Lxztpo5PmD4ERbR",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1080,
+        340
+      ],
+      "id": "859fe186-d1ce-446c-b446-20ffa7d188cc",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pbETxSVhbSuK47JK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.session }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1300,
+        340
+      ],
+      "id": "43b53537-883c-4f80-98d9-703795993531",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1340,
+        940
+      ],
+      "id": "97f5446c-fc1d-45b0-ae64-9ff490fa3c36",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "pbETxSVhbSuK47JK",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('OpenAI').item.json.text }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1540,
+        960
+      ],
+      "id": "a95998cd-0eed-4013-910c-5b7706c37c2e",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "sseEndpoint": "http://teatro-dos-bots:8000/mcp",
+        "include": "selected"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        340
+      ],
+      "id": "3af0d107-bfd5-497e-aaac-5b18d1986d3c",
+      "name": "MCP Client",
+      "notesInFlow": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WAHA Trigger": {
+      "main": [
+        [],
+        [
+          {
+            "node": "MessageType",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAHA3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TextMessage": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MessageType": {
+      "main": [
+        [
+          {
+            "node": "TextMessage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TextMessage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WAHA3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "WAHA1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc8e19aa-e496-450b-9bc0-201aef58d89b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e0c2423909f4746dbe590da0d12713e02505d6900deb9cafc7bdcf7239c94a65"
+  },
+  "id": "ioJrdB1PkYxXnvwx",
+  "tags": []
+}
